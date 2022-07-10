@@ -1,16 +1,33 @@
 library(magick)
 library(colorspace)
 
-foo <- image_read('PXL_20220707_164341339.jpg')
+x <- image_read('PXL_20220707_164341339.jpg')
+
+# make image smaller
+y <- image_scale(x, '400')
+
+# crop how i like it
+y <- image_crop(y, '400x600+0+111')
+
+# convert to raster (so each cell = pixel w/ color hex)
+r <- as.raster(y)
+colz <- as.vector(r)
+
+# hcl space
+hclColz <- as(sRGB(t(col2rgb(colz) / 255)), 'polarLUV')
+i <- sample(nrow(coords(hclColz)), size = 6000)
+
+rt <- coords(hclColz)[i, 2:3]
+xy <- cbind(x = rt[, 1] * cos(rt[, 2]), y = rt[, 1] * sin(rt[, 2]))
+
+plot(sqrt(abs(xy)) * sign(xy))
+plot(xy)
 
 
-boo <- image_scale(foo, '400')
-boo <- image_crop(boo, '400x600+0+111')
+plot(sqrt(coords(hclColz)[i, 2:3]))
 
-doo <- as.raster(boo)
 
-x <- as.vector(doo)
-k <- kmeans(coords(as(sRGB(t(col2rgb(x) / 255)), 'polarLUV')), centers = 8)
+k <- kmeans(coords(), centers = 8)
 
 # here's the centers
 k$centers
